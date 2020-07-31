@@ -1,4 +1,4 @@
-# TODO: Add validation. Move dimension's permutation to the dataset.
+# TODO: Add validation. Move dimensions' permutation to the dataset.
 
 """ Configuration """
 PATH_TO_DATE = "../data"

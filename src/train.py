@@ -1,13 +1,13 @@
 # TODO: Add validation. Move dimensions' permutation to the dataset.
 
 """ Configuration """
-PATH_TO_DATE = "../data"
+DATA_DIR = "../data"
 BATCH_SIZE = 16
 NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.001
 N_EPOCHS = 20
-MODEL_PATH = "../models"
+MODEL_DIR = "../models"
 
 import os
 import torch
@@ -19,7 +19,7 @@ from tqdm import tqdm
 from networks import UNet
 from dataset import VtkDataset
 
-training_data = VtkDataset(base_dir=PATH_TO_DATE)
+training_data = VtkDataset(base_dir=DATA_DIR)
 data_loader = DataLoader(
     training_data,
     batch_size=BATCH_SIZE,
@@ -67,5 +67,5 @@ for epoch in range(N_EPOCHS):
     if train_loss < best_loss:
         best_loss = train_loss
         print("Saving the model!")
-        path_to_save = os.path.join(MODEL_PATH, f"model_checkpoint.pt")
+        path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")
         torch.save(model.state_dict(), path_to_save)

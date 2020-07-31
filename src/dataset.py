@@ -110,6 +110,11 @@ class VtkDataset(Dataset):
         )
         steady_flow_array = np.concatenate([velocity_array, pressure_array], axis=2)
 
+        # Permute axis so that they are compatible with PyTorch DataLoader.
+        # Required order is Channel x Width x Height
+        geometry_array = np.transpose(geometry_array, (2, 0, 1))
+        steady_flow_array = np.transpose(steady_flow_array, (2, 0, 1))
+
         sample = {"geometry": geometry_array, "flow": steady_flow_array}
 
         return sample

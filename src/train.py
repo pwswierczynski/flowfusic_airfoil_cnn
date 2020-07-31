@@ -44,10 +44,8 @@ for epoch in range(N_EPOCHS):
 
     for idx_batch, batch in tqdm(enumerate(data_loader)):
 
-        # Preprocessing the data
+        # Reading the source and target data
         geometries, flows = batch["geometry"], batch["flow"]
-        geometries = geometries.permute(0, 3, 1, 2)
-        flows = flows.permute(0, 3, 1, 2)
 
         # Forward and backward pass for optimization
         optimizer.zero_grad()

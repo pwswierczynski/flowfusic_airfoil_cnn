@@ -13,12 +13,14 @@ import torch
 
 from math import inf
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from typing import Dict
 
 from networks import UNet
 from dataset import VtkDataset
 
+# Define dataset
 training_data = VtkDataset(base_dir=TRAINING_DATA_DIR)
 validation_data = VtkDataset(base_dir=VALIDATION_DATA_DIR)
 
@@ -41,6 +43,9 @@ model = UNet()
 model = model.to(device)
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+# Save checkpoints for inspection with Tensorboard
+writer = SummaryWriter()
 
 
 def compute_loss(
@@ -85,6 +90,8 @@ if __name__ == "__main__":
         train_loss = 0
         validation_loss = 0
 
+        print(f"Trainig epoch: {epoch} out of {N_EPOCHS}")
+
         for idx_batch, batch in tqdm(enumerate(training_data_loader)):
             # Clear the gradient
             optimizer.zero_grad()
@@ -102,7 +109,8 @@ if __name__ == "__main__":
             train_loss += loss_value
 
         with torch.no_grad():
-            for batch in validation_data_loader:
+            print("Measuring validation error")
+            for batch in tqdm(validation_data_loader):
                 loss_functional = compute_loss(
                     batch=batch, model=model, criterion=criterion, device=device
                 )
@@ -114,8 +122,10 @@ if __name__ == "__main__":
 
         # Training statistics
         train_loss = train_loss / len(training_data)
-        print(f"Epoch: {epoch} \tTraining Loss: {train_loss:.6f}")
         validation_loss = validation_loss / len(validation_data)
+        writer.add_scalar("training_loss", train_loss, epoch)
+        writer.add_scalar("validation_loss", validation_loss, epoch)
+        print(f"Epoch: {epoch} \tTraining Loss: {train_loss:.6f}")
         print(f"Epoch: {epoch} \tValidation Loss: {validation_loss:.6f}")
 
         # We always store the best model up to the current epoch
@@ -124,3 +134,6 @@ if __name__ == "__main__":
             print("Saving the model!")
             path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")
             torch.save(model.state_dict(), path_to_save)
+
+    writer.flush()
+    writer.close()

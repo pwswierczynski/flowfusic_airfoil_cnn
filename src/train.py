@@ -5,7 +5,7 @@ BATCH_SIZE = 16
 NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.005
-N_EPOCHS = 5
+N_EPOCHS = 1
 MODEL_DIR = "../models"
 
 import os
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     best_loss = inf
 
-    for epoch in range(N_EPOCHS):
+    for epoch in range(1, N_EPOCHS + 1):
 
         # Monitor training and validation loss
         train_loss = 0
@@ -135,5 +135,6 @@ if __name__ == "__main__":
             path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")
             torch.save(model.state_dict(), path_to_save)
 
+    writer.add_graph(model, batch["geometry"])
     writer.flush()
     writer.close()

@@ -135,6 +135,6 @@ if __name__ == "__main__":
             path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")
             torch.save(model.state_dict(), path_to_save)
 
-    writer.add_graph(model, batch["geometry"])
+    writer.add_graph(model.to("cpu"), batch["geometry"].to("cpu"))
     writer.flush()
     writer.close()

@@ -1,11 +1,11 @@
 """ Configuration """
 TRAINING_DATA_DIR = "../data/training"
 VALIDATION_DATA_DIR = "../data/validation"
-BATCH_SIZE = 16
-NUM_WORKERS = 2
+BATCH_SIZE = 32
+NUM_WORKERS = 4
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.005
-N_EPOCHS = 1
+N_EPOCHS = 25
 MODEL_DIR = "../models"
 
 import os

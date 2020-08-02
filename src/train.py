@@ -131,6 +131,7 @@ if __name__ == "__main__":
 
         # We always store the best model up to the current epoch
         if validation_loss < best_loss:
+            model = model.to("cpu")
             best_loss = validation_loss
             print("Saving the model!")
             path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")

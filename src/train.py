@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     best_loss = inf
 
-    lr_scheduler = ReduceLROnPlateau(optimizer, patience = 5)
+    lr_scheduler = ReduceLROnPlateau(optimizer, patience=5, factor=0.5, verbose=False)
 
     for epoch in range(1, N_EPOCHS + 1):
 

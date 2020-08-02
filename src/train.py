@@ -12,6 +12,7 @@ import os
 import torch
 
 from math import inf
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -85,6 +86,8 @@ if __name__ == "__main__":
 
     best_loss = inf
 
+    lr_scheduler = ReduceLROnPlateau(optimizer, patience = 5)
+
     for epoch in range(1, N_EPOCHS + 1):
 
         # Monitor training and validation loss
@@ -120,6 +123,9 @@ if __name__ == "__main__":
 
                 # Compute loss
                 validation_loss += loss_value
+
+        # Reduce the learning rate once the training plateaus
+        lr_scheduler.step(validation_loss)
 
         # Training statistics
         train_loss = train_loss / len(training_data)

@@ -23,14 +23,14 @@ class UNet(nn.Module):
         self.n_channels = n_channels
         self.output_dim = output_dim
 
-        self.input_conv = ConvolutionalBlock(n_channels, 8)
-        self.downscaling_1 = Downscaling(8, 16)
-        self.downscaling_2 = Downscaling(16, 32)
-        self.downscaling_3 = Downscaling(32, 64)
-        self.upscaling_1 = Upscaling(64, 32)
-        self.upscaling_2 = Upscaling(32, 16)
-        self.upscaling_3 = Upscaling(16, 8)
-        self.output_conv = nn.Conv2d(8, self.output_dim, kernel_size=1)
+        self.input_conv = ConvolutionalBlock(n_channels, 16)
+        self.downscaling_1 = Downscaling(16, 32)
+        self.downscaling_2 = Downscaling(32, 64)
+        self.downscaling_3 = Downscaling(64, 128)
+        self.upscaling_1 = Upscaling(128, 64)
+        self.upscaling_2 = Upscaling(64, 32)
+        self.upscaling_3 = Upscaling(32, 16)
+        self.output_conv = nn.Conv2d(16, self.output_dim, kernel_size=1)
 
     def forward(self, x):
 

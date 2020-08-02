@@ -1,5 +1,5 @@
 """ Configuration """
-TRAINING_DATA_DIR = "../data/validation"
+TRAINING_DATA_DIR = "../data/training"
 VALIDATION_DATA_DIR = "../data/validation"
 BATCH_SIZE = 16
 NUM_WORKERS = 2

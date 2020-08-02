@@ -6,9 +6,6 @@ To install the requirements run
 
 TODO:
 
-- Create a larger dataset using OpenLB
-- Add checkpoints
-- Check GPU compatibility using AWS
 - Heuristic hyperparameter tuning and architecture optimization
 - Create a larger dataset using OF and Flowfusic
 - Retrain

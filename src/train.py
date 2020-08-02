@@ -67,6 +67,7 @@ def compute_loss(
     loss_functional: evaluation of the loss functional.
         Contains also information about the functional's gradient.
     """
+    model = model.to(device)
 
     # Reading the source and target data
     geometries, flows = batch["geometry"], batch["flow"]

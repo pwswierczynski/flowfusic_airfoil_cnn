@@ -1,17 +1,18 @@
 """ Configuration """
 TRAINING_DATA_DIR = "../data/training"
 VALIDATION_DATA_DIR = "../data/validation"
-BATCH_SIZE = 16
-NUM_WORKERS = 2
+BATCH_SIZE = 32
+NUM_WORKERS = 4
 SHUFFLE_DATASET = True
-LEARNING_RATE = 0.005
-N_EPOCHS = 1
+LEARNING_RATE = 0.01
+N_EPOCHS = 100
 MODEL_DIR = "../models"
 
 import os
 import torch
 
 from math import inf
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -85,6 +86,8 @@ if __name__ == "__main__":
 
     best_loss = inf
 
+    lr_scheduler = ReduceLROnPlateau(optimizer, patience=5, factor=0.5, verbose=True)
+
     for epoch in range(1, N_EPOCHS + 1):
 
         # Monitor training and validation loss
@@ -121,6 +124,9 @@ if __name__ == "__main__":
                 # Compute loss
                 validation_loss += loss_value
 
+        # Reduce the learning rate once the training plateaus
+        lr_scheduler.step(validation_loss)
+
         # Training statistics
         train_loss = train_loss / len(training_data)
         validation_loss = validation_loss / len(validation_data)
@@ -131,6 +137,7 @@ if __name__ == "__main__":
 
         # We always store the best model up to the current epoch
         if validation_loss < best_loss:
+            model = model.to("cpu")
             best_loss = validation_loss
             print("Saving the model!")
             path_to_save = os.path.join(MODEL_DIR, f"model_checkpoint.pt")

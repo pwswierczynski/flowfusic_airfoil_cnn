@@ -271,7 +271,7 @@ class AirfoilGeometrySampler:
         try:
             os.makedirs(dir_to_save)
         except OSError:
-            print(f"Creation of the directory {dir_to_save} failed")
+            print(f"Directory {dir_to_save} already exists!")
 
         # Saving geometry as .geo and .stl file
         path_to_save_geo = os.path.join(dir_to_save, f"{filename}.geo")
@@ -280,7 +280,7 @@ class AirfoilGeometrySampler:
         mesh.writeGeo(path_to_save_geo)
         subprocess.run(
             [
-                "/Applications/Gmsh.app/Contents/MacOS/gmsh",
+                "gmsh",
                 path_to_save_geo,
                 "-2",
                 "-o",
@@ -288,6 +288,8 @@ class AirfoilGeometrySampler:
                 "-format",
                 "stl",
                 "-save_all",
+                "-v",
+                "0",
             ]
         )
 

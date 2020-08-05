@@ -52,6 +52,7 @@ class AirfoilGeometrySampler:
         self.beta_min, self.beta_max = 0.1452, 4.8724
 
         self.n_points = n_points
+        self.discretization_points = np.linspace(0, 1, n_points)
 
         self.top_left_corner = top_left_corner
         self.bottom_right_corner = bottom_right_corner
@@ -94,13 +95,19 @@ class AirfoilGeometrySampler:
 
         # Camber line
         x_camber = (
-            3 * c1 * self.n_points * (1 - self.n_points) ** 2
-            + 3 * c2 * (1 - self.n_points) * self.n_points ** 2
-            + self.n_points ** 3
+            3 * c1 * self.discretization_points * (1 - self.discretization_points) ** 2
+            + 3
+            * c2
+            * (1 - self.discretization_points)
+            * self.discretization_points ** 2
+            + self.discretization_points ** 3
         )
         y_camber = (
-            3 * c3 * self.n_points * (1 - self.n_points) ** 2
-            + 3 * c4 * (1 - self.n_points) * self.n_points ** 2
+            3 * c3 * self.discretization_points * (1 - self.discretization_points) ** 2
+            + 3
+            * c4
+            * (1 - self.discretization_points)
+            * self.discretization_points ** 2
         )
 
         # Assemble linear system to solve for thickness parameters
@@ -232,7 +239,7 @@ class AirfoilGeometrySampler:
         interval = Entity.Curve([point1, point2])
         intervals.append(interval)
 
-        my_mesh.addEntities(intervals)
+        mesh.addEntities(intervals)
         airfoil_profile = Entity.CurveLoop(intervals, mesh=mesh)
 
         # Define interior of the domain
@@ -273,7 +280,7 @@ class AirfoilGeometrySampler:
         mesh.writeGeo(path_to_save_geo)
         subprocess.run(
             [
-                "gmsh",
+                "/Applications/Gmsh.app/Contents/MacOS/gmsh",
                 path_to_save_geo,
                 "-2",
                 "-o",

@@ -10,12 +10,32 @@ from typing import Optional, Tuple
 
 
 class AirfoilGeometrySampler:
+    """
+    Implementation of an airfoil parametrization proposed in
+    'An improved geometric parameter airfoil parameterization method',
+    L. Xiaoqiang, H. Jun, S. Lei, L. Jing,
+    Aerospace Science and Technology, 78 (2018), 241-247.
+
+    :param n_points (int): number of points used in the discretization of the upper and
+        lower curve of the airfoil. The total discretization of the airfoil uses thus
+        2 * n_points - 2 points.
+    :param top_left_corner Tuple[float, float]: coordinates of
+        the domain's top left corner
+    :param bottom_right_corner Tuple[float, float]: coordinates of
+        the domain's bottom right corner
+    """
+
     def __init__(
         self,
         n_points: int = 50,
         top_left_corner: Tuple[float, float] = (-1, 0.5),
         bottom_right_corner: Tuple[float, float] = (2, -0.5),
     ) -> None:
+
+        # Make sure the airfoil will be inside the domain
+        assert (
+            top_left_corner[0] < 0 and bottom_right_corner[0] > 1
+        ), "The airfoil spanning the interval (0, 1) needs to be within the domain!"
 
         # Ranges of parameters describing the airfoil geometry.
         # Values taken from the original paper.
@@ -47,7 +67,28 @@ class AirfoilGeometrySampler:
         rho_bar: float,
         beta_bar: float,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Computes approximation of the airfoil's geometry based on the given parameters
+        describing its shape.
 
+        :param c1: coefficient of camber-line-abscissa parameter equation.
+            Takes values in the range (0.01, 0.96).
+        :param c2: coefficient of camber-line-abscissa parameter equation.
+            Takes values in the range (0.02, 0.97).
+        :param c3: coefficient of camber-line-abscissa parameter equation.
+            Takes values in the range (-0.074, 0.247).
+        :param c4: coefficient of camber-line-abscissa parameter equation.
+            Takes values in the range (-0.102, 0.206).
+        :param X_T: chordwise location of maximum thickness.
+            Takes values in the range (-0.2002, 0.4813).
+        :param T: x-coordinate of the point of maximum thickness.
+            Takes values in the range (0.0246, 0.3227).
+        :param rho_bar: relative quantity of the leading edge radius.
+            Takes values in the range (0.175, 1.4944).
+        :param beta_bar: relative quantity of the trailing edge boat-tail angle.
+            Takes values in the range (0.1452, 4.8724).
+        :return:
+        """
         rho = rho_bar * (T / X_T) ** 2
         beta = beta_bar * np.arctan(T / (1 - X_T))
 
@@ -90,6 +131,17 @@ class AirfoilGeometrySampler:
         return x_camber, upper_curve, lower_curve
 
     def sample_airfoil_geometry(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        This function samples eight parameters describing the airfoil's geometry,
+        and compoutes the discretizations of the airfoil's profile.
+
+        :return:
+        x_camber: x-coeficients of points used in the discretization.
+        upper_curve: y-coefficients of the upper profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        lower_curve: y-coefficients of the lower profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        """
 
         c1 = uniform(self.c_1min, self.c_1max)
         c2 = uniform(self.c_2min, self.c_2max)
@@ -108,7 +160,18 @@ class AirfoilGeometrySampler:
 
     def _mesh_geometry(
         self, x_camber: np.ndarray, upper_curve: np.ndarray, lower_curve: np.ndarray,
-    ) -> py2gmsh.Mesh.Mesh:
+    ) -> Mesh:
+        """
+        Function computing a triangulation of the airfoil domain.
+
+        :param x_camber: x-coeficients of points used in the discretization.
+        :param upper_curve: y-coefficients of the upper profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        :param lower_curve: y-coefficients of the lower profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        :return:
+        mash: airfoil's triangulation computed using GMSH package.
+        """
 
         mesh = Mesh()
 
@@ -183,6 +246,14 @@ class AirfoilGeometrySampler:
     def create_airfoil_geometry(
         self, dir_to_save: str, filename: str = "geometry"
     ) -> None:
+        """
+        End-to-end function sampling an airfoil's profile, triangulating it,
+        and saving the geometry in .geo and .stl formats.
+
+        :param dir_to_save: directory, in which the geometry will be stored.
+        :param filename: name of the geometry files. The default value is "geometry".
+            The function saves <filename>.geo and <filename>.stl files.
+        """
 
         x_camber, upper_curve, lower_curve = self.sample_airfoil_geometry()
         mesh = self._mesh_geometry(
@@ -217,6 +288,18 @@ class AirfoilGeometrySampler:
     def plot_airfoil(
         x_camber, upper_curve, lower_curve, filename: Optional[str] = None
     ) -> None:
+        """
+        Function visualizing the provided airfoil's profile.
+
+        :param x_camber: x-coeficients of points used in the discretization.
+        :param upper_curve: y-coefficients of the upper profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        :param lower_curve: y-coefficients of the lower profile of the sampled airfoil.
+            The discretization is evaluated at x_camber points.
+        :param filename: name of the image file, in which the visualization should
+            be saved. If None value is provided, then no image is saved.
+            This parameter is optional and by default equal to None.
+        """
 
         plt.figure()
         plt.plot(x_camber, lower_curve)

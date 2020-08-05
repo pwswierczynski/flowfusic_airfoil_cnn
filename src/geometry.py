@@ -106,16 +106,11 @@ class AirfoilGeometrySampler:
         )
         return x_camber, upper_curve, lower_curve
 
-    def create_mesh(
-        self,
-        x_camber: np.ndarray,
-        upper_curve: np.ndarray,
-        lower_curve: np.ndarray,
-        dir_to_save: str,
-        filename: str = "geometry",
-    ) -> None:
+    def _mesh_geometry(
+        self, x_camber: np.ndarray, upper_curve: np.ndarray, lower_curve: np.ndarray,
+    ) -> py2gmsh.Mesh.Mesh:
 
-        my_mesh = Mesh()
+        mesh = Mesh()
 
         top_left = Entity.Point([*self.top_left_corner, 0])
         top_right = Entity.Point(
@@ -127,10 +122,10 @@ class AirfoilGeometrySampler:
         bottom_right = Entity.Point([*self.bottom_right_corner, 0])
 
         # Add domain's corners to the geometry
-        my_mesh.addEntity(top_left)
-        my_mesh.addEntity(top_right)
-        my_mesh.addEntity(bottom_left)
-        my_mesh.addEntity(bottom_right)
+        mesh.addEntity(top_left)
+        mesh.addEntity(top_right)
+        mesh.addEntity(bottom_left)
+        mesh.addEntity(bottom_right)
 
         # Define the outer boundary
         top_boundary = Entity.Curve([top_left, top_right])
@@ -144,21 +139,21 @@ class AirfoilGeometrySampler:
             bottom_boundary,
             left_boundary,
         ]
-        my_mesh.addEntities(domain_outer_boundary)
+        mesh.addEntities(domain_outer_boundary)
 
-        outer_curve = Entity.CurveLoop(domain_outer_boundary, mesh=my_mesh)
+        outer_curve = Entity.CurveLoop(domain_outer_boundary, mesh=mesh)
 
         # Add airfoil points
         airfoil_points = []
         for x, y in zip(x_camber, upper_curve):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
-            my_mesh.addEntity(point)
+            mesh.addEntity(point)
 
         for x, y in zip(x_camber[::-1][1:-1], lower_curve[::-1][1:-1]):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
-            my_mesh.addEntity(point)
+            mesh.addEntity(point)
 
         # Discretize the airfoil profile
         intervals = []
@@ -175,19 +170,36 @@ class AirfoilGeometrySampler:
         intervals.append(interval)
 
         my_mesh.addEntities(intervals)
-        airfoil_profile = Entity.CurveLoop(intervals, mesh=my_mesh)
+        airfoil_profile = Entity.CurveLoop(intervals, mesh=mesh)
 
         # Define interior of the domain
-        Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=my_mesh)
+        Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=mesh)
 
         # Adding Coherence option
-        my_mesh.Coherence = True
+        mesh.Coherence = True
+
+        return mesh
+
+    def create_airfoil_geometry(
+        self, dir_to_save: str, filename: str = "geometry"
+    ) -> None:
+
+        x_camber, upper_curve, lower_curve = self.sample_airfoil_geometry()
+        mesh = self._mesh_geometry(
+            x_camber=x_camber, upper_curve=upper_curve, lower_curve=lower_curve
+        )
+
+        # Create directory for saving the data
+        try:
+            os.makedirs(dir_to_save)
+        except OSError:
+            print(f"Creation of the directory {dir_to_save} failed")
 
         # Saving geometry as .geo and .stl file
         path_to_save_geo = os.path.join(dir_to_save, f"{filename}.geo")
         path_to_save_stl = os.path.join(dir_to_save, f"{filename}.stl")
 
-        my_mesh.writeGeo(path_to_save_geo)
+        mesh.writeGeo(path_to_save_geo)
         subprocess.run(
             [
                 "gmsh",
@@ -201,9 +213,10 @@ class AirfoilGeometrySampler:
             ]
         )
 
+    @staticmethod
     def plot_airfoil(
-        self, x_camber, upper_curve, lower_curve, filename: Optional[str] = None
-    ):
+        x_camber, upper_curve, lower_curve, filename: Optional[str] = None
+    ) -> None:
 
         plt.figure()
         plt.plot(x_camber, lower_curve)

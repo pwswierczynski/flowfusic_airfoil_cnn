@@ -9,7 +9,7 @@ import numpy as np
 
 from numpy.random import uniform
 from py2gmsh import Mesh, Entity, Field
-from typing import Optional
+from typing import Optional, Tuple
 
 
 class AirfoilGeometrySampler:

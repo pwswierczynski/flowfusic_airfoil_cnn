@@ -1,7 +1,4 @@
-# Configuration
-N_POINTS = 50  # Number of discretization points of lower and upper airfoil profile
-N_SAMPLES = 10  # Number of created geometries
-
+import os
 import subprocess
 
 import matplotlib.pyplot as plt
@@ -110,7 +107,12 @@ class AirfoilGeometrySampler:
         return x_camber, upper_curve, lower_curve
 
     def create_mesh(
-        self, x_camber: np.ndarray, upper_curve: np.ndarray, lower_curve: np.ndarray
+        self,
+        x_camber: np.ndarray,
+        upper_curve: np.ndarray,
+        lower_curve: np.ndarray,
+        dir_to_save: str,
+        filename: str = "geometry",
     ) -> None:
 
         my_mesh = Mesh()
@@ -175,19 +177,24 @@ class AirfoilGeometrySampler:
         my_mesh.addEntities(intervals)
         airfoil_profile = Entity.CurveLoop(intervals, mesh=my_mesh)
 
+        # Define interior of the domain
         Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=my_mesh)
 
-        # adding Coherence option
+        # Adding Coherence option
         my_mesh.Coherence = True
 
-        my_mesh.writeGeo("my_mesh.geo")
+        # Saving geometry as .geo and .stl file
+        path_to_save_geo = os.path.join(dir_to_save, f"{filename}.geo")
+        path_to_save_stl = os.path.join(dir_to_save, f"{filename}.stl")
+
+        my_mesh.writeGeo(path_to_save_geo)
         subprocess.run(
             [
                 "gmsh",
-                "my_mesh.geo",
+                path_to_save_geo,
                 "-2",
                 "-o",
-                "newer_mesh.stl",
+                path_to_save_stl,
                 "-format",
                 "stl",
                 "-save_all",

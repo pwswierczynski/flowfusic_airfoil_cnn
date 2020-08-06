@@ -2,7 +2,6 @@ import argparse
 import os
 
 from tqdm import tqdm
-from typing import List
 
 train_samples = 5
 validation_samples = 2

@@ -1,6 +1,8 @@
+import argparse
 import os
 
 from tqdm import tqdm
+from typing import List
 
 train_samples = 5
 validation_samples = 2
@@ -12,9 +14,40 @@ DATA_DIR = os.path.join("data", "geometry")
 from src.geometry import AirfoilGeometrySampler
 
 
+def parse_arguments() -> argparse.Namespace:
+    """ Command line arguments parser """
+
+    parser = argparse.ArgumentParser(
+        description="Define number of samples and the discretization of the dataset."
+    )
+
+    parser.add_argument(
+        "--train_samples",
+        type=int,
+        default=10,
+        help="Number of sample airfoil geometries in the training set.",
+    )
+    parser.add_argument(
+        "--validation_samples",
+        type=int,
+        default=10,
+        help="Number of sample airfoil geometries in the validation set.",
+    )
+    parser.add_argument(
+        "--test_samples",
+        type=int,
+        default=10,
+        help="Number of sample airfoil geometries in the test set.",
+    )
+
+    arguments = parser.parse_args()
+
+    return arguments
+
+
 def create_airfoil_profiles(directory: str, n_samples: int) -> None:
     """
-	Creates a set of airfoil profiles in .geo and .stl formats in the given directory.
+    Creates a set of airfoil profiles in .geo and .stl formats in the given directory.
 
 	:param directory: Path to the directory, in which the profiles should be saved.
 	:param n_samples: Number of samples in the dataset.
@@ -32,6 +65,11 @@ def create_airfoil_profiles(directory: str, n_samples: int) -> None:
 
 
 if __name__ == "__main__":
+
+    args = parse_arguments()
+    train_samples = args.train_samples
+    validation_samples = args.validation_samples
+    test_samples = args.test_samples
 
     print("Creating train set!")
     training_data_dir = os.path.join(DATA_DIR, "train")

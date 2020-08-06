@@ -35,7 +35,7 @@ def parse_arguments() -> argparse.Namespace:
         "--n_discretization_points",
         type=int,
         default=50,
-        help="Number of points used in the discretization of the upper and lower airfoil profile.",
+        help="Number of points in the discretization of the upper and lower profiles.",
     )
     parser.add_argument(
         "--data_dir",
@@ -54,7 +54,7 @@ def create_airfoil_profiles(directory: str, n_samples: int, n_points: int) -> No
 
 	:param directory (str): Path to the directory, in which the profiles should be saved.
 	:param n_samples (int): Number of samples in the dataset.
-    :param n_points (int): number of points used in the discretization of the upper and
+    :param n_points (int): Number of points used in the discretization of the upper and
         lower curve of the airfoil. The total discretization of the airfoil uses thus
         2 * n_points - 2 points.
 	"""
@@ -71,7 +71,6 @@ def create_airfoil_profiles(directory: str, n_samples: int, n_points: int) -> No
 
 
 if __name__ == "__main__":
-
     args = parse_arguments()
 
     print("Creating train set!")

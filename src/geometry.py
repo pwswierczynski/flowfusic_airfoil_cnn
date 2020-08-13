@@ -28,8 +28,8 @@ class AirfoilGeometrySampler:
     def __init__(
         self,
         n_points: int = 50,
-        top_left_corner: Tuple[float, float] = (-1, 0.5),
-        bottom_right_corner: Tuple[float, float] = (2, -0.5),
+        top_left_corner: Tuple[float, float] = (-5, 5),
+        bottom_right_corner: Tuple[float, float] = (5, -5),
     ) -> None:
 
         # Make sure the airfoil will be inside the domain
@@ -53,6 +53,8 @@ class AirfoilGeometrySampler:
 
         self.n_points = n_points
         self.discretization_points = np.linspace(0, 1, n_points)
+        # MS: added to have more points at leading edge
+        self.discretization_points = self.discretization_points**1.9
 
         self.top_left_corner = top_left_corner
         self.bottom_right_corner = bottom_right_corner
@@ -215,16 +217,19 @@ class AirfoilGeometrySampler:
 
         # Add airfoil points
         airfoil_points = []
+
+        i=0
         for x, y in zip(x_camber, upper_curve):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
             mesh.addEntity(point)
 
+
         for x, y in zip(x_camber[::-1][1:-1], lower_curve[::-1][1:-1]):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
             mesh.addEntity(point)
-
+  
         # Discretize the airfoil profile
         intervals = []
         for i in range(len(airfoil_points) - 1):
@@ -243,12 +248,31 @@ class AirfoilGeometrySampler:
         airfoil_profile = Entity.CurveLoop(intervals, mesh=mesh)
 
         # Define interior of the domain
-        Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=mesh)
+        surface = Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=mesh)
+
+        
+        fbl = Field.BoundaryLayer(mesh=mesh)
+
+        fbl.EdgesList = intervals;
+        fbl.AnisoMax = 1.0;
+        fbl.hfar = 0.2;
+        fbl.hwall_n = 0.001;
+        fbl.thickness = 0.05;
+        fbl.ratio = 1.1;
+        fbl.Quads = 1;
+        fbl.IntersectMetrics = 0;
+        mesh.BoundaryLayerField=fbl
+        
+        
+        # set max element size
+        mesh.Options.Mesh.CharacteristicLengthMax = 0.3
 
         # Adding Coherence option
-        mesh.Coherence = True
+        #mesh.Coherence = True
 
         return mesh
+
+        
 
     def create_airfoil_geometry(
         self, dir_to_save: str, filename: str = "geometry"
@@ -276,13 +300,41 @@ class AirfoilGeometrySampler:
         # Saving geometry as .geo and .stl file
         path_to_save_geo = os.path.join(dir_to_save, f"{filename}.geo")
         path_to_save_stl = os.path.join(dir_to_save, f"{filename}.stl")
+        path_to_save_msh = os.path.join(dir_to_save, f"{filename}.msh")
 
         mesh.writeGeo(path_to_save_geo)
+        geo = open(path_to_save_geo,'a')
+        geo.write("Physical Volume(\"internal\") = {1};\n")
+        geo.write("Extrude {0, 0, 0.1} {\n Surface{1};\n Layers{1};\n Recombine;\n}\n")
+        geo.write("Physical Surface(\"inlet\") = {1};\n")
+        #geo.write("Physical Surface(\"inlet2\") = {7};\n")
+        #geo.write("Physical Surface(\"inlet3\") = {zV[3]};\n")
+        #geo.write("Physical Surface(\"inlet4\") = {zV[4]};\n")
+        #geo.write("Physical Surface(\"inlet5\") = {zV[5]};\n")
+
+        geo.write("Coherence\n")
+        geo.close()
+
+        
         subprocess.run(
             [
                 "gmsh",
                 path_to_save_geo,
-                "-2",
+                "-3",
+                "-o",
+                path_to_save_msh,
+                "-format",
+                "msh2",
+                "-save_all",
+                "-v",
+                "0",
+            ]
+        )
+        subprocess.run(
+            [
+                "gmsh",
+                path_to_save_geo,
+                "-3",
                 "-o",
                 path_to_save_stl,
                 "-format",
@@ -292,6 +344,7 @@ class AirfoilGeometrySampler:
                 "0",
             ]
         )
+
 
     @staticmethod
     def plot_airfoil(

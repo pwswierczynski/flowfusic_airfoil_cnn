@@ -5,7 +5,7 @@ from tqdm import tqdm
 train_samples = 5
 validation_samples = 2
 test_samples = 2
-n_points = 50
+n_points = 150
 
 DATA_DIR = os.path.join("data", "geometry")
 

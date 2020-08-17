@@ -5,13 +5,13 @@ import numpy as np
 
 from torch.utils.data import Dataset
 from typing import Optional, Tuple
-from vtk import vtkXMLMultiBlockDataReader
+from vtk import vtkUnstructuredGridReader
 from vtk.util.numpy_support import vtk_to_numpy
 
 
 class VtkDataset(Dataset):
     def __init__(
-        self, base_dir: str = "../data", np_shape: Optional[Tuple[int]] = None
+        self, base_dir: str = "../data", np_shape: Tuple[int, int] = (51, 151)
     ) -> None:
 
         # Root directory of the dataset
@@ -37,19 +37,16 @@ class VtkDataset(Dataset):
         """
 
         # TODO: Do we need to instantiate a new reader in every call?
-        reader = vtkXMLMultiBlockDataReader()
+        reader = vtkUnstructuredGridReader()
+        reader.ReadAllScalarsOn()
+        reader.ReadAllVectorsOn()
+        reader.ReadAllTensorsOn()
+
         reader.SetFileName(filename)
         reader.Update()
         data = reader.GetOutput()
-        data_iterator = data.NewIterator()
-        img_data = data_iterator.GetCurrentDataObject()
 
-        # If the data shape is not yet provided, read it out from the file.
-        if self.np_shape is None:
-            img_shape = img_data.GetDimensions()
-            self.np_shape = (img_shape[1], img_shape[0], 1)
-
-        point_data = img_data.GetPointData()
+        point_data = data.GetPointData()
 
         return point_data
 
@@ -71,8 +68,10 @@ class VtkDataset(Dataset):
         array_data = point_data.GetArray(array_idx)
         np_array = vtk_to_numpy(array_data)
 
-        data_shape = (self.np_shape[0], self.np_shape[1], ndims)
-        numpy_array = np_array.reshape(data_shape)
+        data_shape = (2, self.np_shape[0], self.np_shape[1], ndims)
+
+        # Reshape and pick only one of two equal surfaces returned by OpenFOAM
+        numpy_array = np_array.reshape(data_shape)[0, :, :, :]
 
         return numpy_array
 

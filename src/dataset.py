@@ -60,6 +60,18 @@ class SimulationDataset(Dataset):
         return data_names
 
     def _get_geometry_array(self, data_directory: str) -> np.ndarray:
+        """
+        Function reading the geometry information of the current sample.
+        This function applies necessary preprocessing of the data
+        by cropping and resizing provided image.
+
+        :params
+        data_directory: path to the current simulation sample
+
+        :returns
+        geometry_array: numpy array, in which 0 denotes the empty domain and
+            1 region occupied by the simulated geometry of an airfoil
+        """
 
         # Load geometry
         path_to_geometry = os.path.join(data_directory, self.geometry_filename)
@@ -76,6 +88,16 @@ class SimulationDataset(Dataset):
         return geometry_array
 
     def _get_flow_array(self, data_directory: str) -> np.ndarray:
+        """
+        Function reading the simylated velocity and pressure of the current sample.
+
+        :params
+        data_directory: path to the current simulation sample
+
+        :returns
+        flow_array: numpy array, in which first two channels contain the simulated
+            velocity and the third channel contains the simulated pressure
+        """
 
         path_to_simulation = os.path.join(data_directory, self.simulation_filename)
 

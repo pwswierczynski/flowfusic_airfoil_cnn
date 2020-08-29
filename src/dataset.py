@@ -34,7 +34,7 @@ class SimulationDataset(Dataset):
         geometry_filename: str = "flow_geo.png",
         simulation_filename: str = "flow.p",
         np_shape: Tuple[int, int] = (100, 300),
-        geometry_bounds: Tuple[int] = (151, 319, 997, 601),
+        geometry_bounds: Tuple[int, int, int, int] = (151, 319, 997, 601),
     ) -> None:
 
         # Root directory of the dataset
@@ -140,6 +140,7 @@ class SimulationDataset(Dataset):
         return self.len_dataset
 
     def __getitem__(self, idx: int) -> Dict[str, np.ndarray]:
+        """ Returns chosen element from the dataset """
 
         # Directory with the current sample
         data_directory = os.path.join(self.base_dir, self.data_names[idx])

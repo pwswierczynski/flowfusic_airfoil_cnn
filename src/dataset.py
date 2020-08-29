@@ -1,12 +1,41 @@
+"""
+TODO:
+    write __len__ function
+    write__getitem function
+    Add default image shape
+    Pickle reader
+    delete VtkDataset
+"""
+
 import glob
 import os
+import pickle
 
 import numpy as np
 
 from torch.utils.data import Dataset
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 from vtk import vtkXMLMultiBlockDataReader
 from vtk.util.numpy_support import vtk_to_numpy
+
+
+class PickleDataset(Dataset):
+    def __init__(self, base_dir: str = "../data", np_shape: Optional[Tuple[int]] = None) -> None:
+
+        # Root directory of the dataset
+        self.base_dir = base_dir
+
+        # We assume that all samples have the shame shape.
+        self.np_shape = np_shape
+
+    def __len__(self) -> int:
+        """ Returns the size of the dataset """
+        return 0
+
+    def __getitem__(self, idx: int) -> Dict[str, np.ndarray]:
+
+        return 0
+
 
 
 class VtkDataset(Dataset):
@@ -76,11 +105,11 @@ class VtkDataset(Dataset):
 
         return numpy_array
 
-    def __len__(self):
+    def __len__(self) -> int:
         """ Returns the size of the dataset """
         return len(self.xml_files)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> Dict[str, np.ndarray]:
 
         # Choose one of the configuration files
         path_to_file = self.xml_files[idx]

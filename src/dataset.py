@@ -14,13 +14,13 @@ import pickle
 import numpy as np
 
 from torch.utils.data import Dataset
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from vtk import vtkXMLMultiBlockDataReader
 from vtk.util.numpy_support import vtk_to_numpy
 
 
 class PickleDataset(Dataset):
-    def __init__(self, base_dir: str = "../data", np_shape: Optional[Tuple[int]] = None) -> None:
+    def __init__(self, base_dir: str = "../data/train", np_shape: Tuple[int, int] = (100, 300)) -> None:
 
         # Root directory of the dataset
         self.base_dir = base_dir
@@ -28,14 +28,43 @@ class PickleDataset(Dataset):
         # We assume that all samples have the shame shape.
         self.np_shape = np_shape
 
+        # Number of samples in the dataset
+        self.data_names = self._get_data_names()
+        self.len_dataset = len(self.data_names)
+
+    def _get_data_names(self) -> List[str]:
+        """
+        Obtains names of data points.
+        This is done by checking folders in the base_dir.
+        It assumes that base_dir contains only folders with data.
+
+        This function is also a second security layer in case saving the data
+        during the simulation process failed for some samples.
+
+        :returns
+        data_names - list of sample datapoints
+        """
+        data_names = []
+        for object in os.listdir(self.base_dir):
+            path_to_object = os.path.join(self.base_dir, object)
+            if os.path.isdir(path_to_object):
+                data_names.append(object)
+        return data_names
+
     def __len__(self) -> int:
         """ Returns the size of the dataset """
-        return 0
+        return self.len_dataset
 
     def __getitem__(self, idx: int) -> Dict[str, np.ndarray]:
 
-        return 0
+        # Load geometry
 
+
+        steady_flow_array = np.concatenate([velocity_array, pressure_array], axis=2)
+
+        sample = {"geometry": geometry_array, "flow": steady_flow_array}
+
+        return sample
 
 
 class VtkDataset(Dataset):

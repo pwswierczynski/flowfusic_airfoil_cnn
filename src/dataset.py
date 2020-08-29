@@ -21,12 +21,31 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 
 class SimulationDataset(Dataset):
+    """
+    Dataset class responsible for reading the geometry and simulation data obtained
+    with OpenFOAM.
+
+    :params
+    base_dir: path to the directory containing the current dataset. This could be
+        training, validation or test dataset. Default in '../data/train/'.
+    geometry_filename: name of PNG files, in which the geometries are described.
+        Default is 'flow_geo.png'.
+    simulation_filename:  name of a pickle file, in which the simulation results are
+        stored. All simulated files have to have 'U' and 'p' keys for the simulated
+        velocity and pressure respectively. Default is 'flow.p'
+    np_shape: shape of the domain. Default in (100, 300)
+    geometry_bounds: geometry PNG file may contain a layer of empty pixels around the
+        domain. The computational domain is contained inside the rectangle
+        described with four coordinates: (left, top, right, bottom).
+        Default is (151, 319, 997, 601).
+    """
+
     def __init__(
         self,
         base_dir: str = "../data/train",
-        np_shape: Tuple[int, int] = (100, 300),
         geometry_filename: str = "flow_geo.png",
         simulation_filename: str = "flow.p",
+        np_shape: Tuple[int, int] = (100, 300),
         geometry_bounds: Tuple[int] = (151, 319, 997, 601),
     ) -> None:
 
@@ -34,6 +53,8 @@ class SimulationDataset(Dataset):
         self.base_dir = base_dir
 
         # Filenames
+        assert geometry_filename.endswith('png'),\
+            "Geometry must be given as a PNG file!"
         self.geometry_filename = geometry_filename
         self.simulation_filename = simulation_filename
 

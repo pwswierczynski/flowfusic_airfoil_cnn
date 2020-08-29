@@ -21,7 +21,14 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 
 class SimulationDataset(Dataset):
-    def __init__(self, base_dir: str = "../data/train", np_shape: Tuple[int, int] = (100, 300), geometry_filename: str = 'flow_geo.png', simulation_filename: str = 'flow.p', geometry_bounds: Tuple[int] = (151, 319, 997, 601)) -> None:
+    def __init__(
+        self,
+        base_dir: str = "../data/train",
+        np_shape: Tuple[int, int] = (100, 300),
+        geometry_filename: str = "flow_geo.png",
+        simulation_filename: str = "flow.p",
+        geometry_bounds: Tuple[int] = (151, 319, 997, 601),
+    ) -> None:
 
         # Root directory of the dataset
         self.base_dir = base_dir
@@ -82,7 +89,9 @@ class SimulationDataset(Dataset):
 
         # PIL swaps axis compared to numpy arrays
         geometry_shape = (self.np_shape[1], self.np_shape[0])
-        resized_geometry = cropped_geometry.resize(geometry_shape, resample=Image.NEAREST)
+        resized_geometry = cropped_geometry.resize(
+            geometry_shape, resample=Image.NEAREST
+        )
         geometry_array = np.array(resized_geometry)[..., 0]
 
         return geometry_array
@@ -101,14 +110,16 @@ class SimulationDataset(Dataset):
 
         path_to_simulation = os.path.join(data_directory, self.simulation_filename)
 
-        with open(path_to_simulation, 'rb') as simulation_file:
+        with open(path_to_simulation, "rb") as simulation_file:
 
             simulation_data = pickle.load(simulation_file)
-            simulated_velocity = np.array(simulation_data['U']).reshape((*self.np_shape, 3))
+            simulated_velocity = np.array(simulation_data["U"]).reshape(
+                (*self.np_shape, 3)
+            )
 
             # Get only the first two channels containing x- and y- velocity components
             velocity_array = simulated_velocity[..., :2]
-            pressure_array = np.array(simulation_data['p']).reshape(self.np_shape)
+            pressure_array = np.array(simulation_data["p"]).reshape(self.np_shape)
 
             flow_array = np.concatenate([velocity_array, pressure_array], axis=2)
 
@@ -150,7 +161,7 @@ class VtkDataset(Dataset):
         self.np_shape = np_shape
 
     def _read_point_data_from_vtk(self, filename: str):
-        """ Reads point_data from the provided VTK file
+        """Reads point_data from the provided VTK file
         :param
         filename: (str) name of the VTK file containing the data.
 
@@ -178,7 +189,7 @@ class VtkDataset(Dataset):
     def _read_numpy_from_points(
         self, point_data, ndims: int = 1, array_idx: int = 0
     ) -> np.ndarray:
-        """ Function reading data as numpy array in a desired shape
+        """Function reading data as numpy array in a desired shape
         :param
         point_data: (vtkPointData) vtk point data
         ndims: (int) dimensionality of the quantity, e.g. pressure has dimension 1,

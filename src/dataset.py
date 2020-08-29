@@ -1,13 +1,3 @@
-"""
-TODO:
-    write __len__ function
-    write__getitem function
-    Add default image shape
-    Pickle reader
-    delete VtkDataset
-"""
-
-import glob
 import os
 import pickle
 
@@ -15,9 +5,7 @@ import numpy as np
 
 from PIL import Image
 from torch.utils.data import Dataset
-from typing import Dict, List, Optional, Tuple
-from vtk import vtkXMLMultiBlockDataReader
-from vtk.util.numpy_support import vtk_to_numpy
+from typing import Dict, List, Tuple
 
 
 class SimulationDataset(Dataset):

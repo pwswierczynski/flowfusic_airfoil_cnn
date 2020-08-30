@@ -160,6 +160,9 @@ class SimulationDataset(Dataset):
         geometry_array = self._get_geometry_array(data_directory=data_directory)
         flow_array = self._get_flow_array(data_directory=data_directory)
 
+        # Making sure that velocity and pressure are zero inside the geometry
+        flow_array = geometry_array * flow_array
+
         sample = {"geometry": geometry_array, "flow": flow_array}
 
         return sample

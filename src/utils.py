@@ -69,7 +69,9 @@ class Upscaling(nn.Module):
         self.trans_conv = nn.ConvTranspose2d(
             in_channels, in_channels // 2, kernel_size=2, stride=2
         )
-        self.upsampling = nn.Upsample(scale_factor=2, mode='bilinear')
+        self.upsampling = nn.Upsample(
+            scale_factor=2, mode="bilinear", align_corners=True
+        )
         self.conv_block = ConvolutionalBlock(int(3 * in_channels / 2), out_channels)
 
     def forward(self, first_layer, second_layer):

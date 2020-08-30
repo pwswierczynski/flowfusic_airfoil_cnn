@@ -1,8 +1,8 @@
 """ Configuration """
-TRAINING_DATA_DIR = "../data/training"
+TRAINING_DATA_DIR = "../data/train"
 VALIDATION_DATA_DIR = "../data/validation"
-BATCH_SIZE = 32
-NUM_WORKERS = 4
+BATCH_SIZE = 16
+NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.01
 N_EPOCHS = 100
@@ -19,34 +19,7 @@ from tqdm import tqdm
 from typing import Dict
 
 from networks import UNet
-from dataset import VtkDataset
-
-# Define dataset
-training_data = VtkDataset(base_dir=TRAINING_DATA_DIR)
-validation_data = VtkDataset(base_dir=VALIDATION_DATA_DIR)
-
-training_data_loader = DataLoader(
-    training_data,
-    batch_size=BATCH_SIZE,
-    shuffle=SHUFFLE_DATASET,
-    num_workers=NUM_WORKERS,
-)
-
-validation_data_loader = DataLoader(
-    validation_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS
-)
-
-# Use GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Create a model and optimization method
-model = UNet()
-model = model.to(device)
-criterion = torch.nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-
-# Save checkpoints for inspection with Tensorboard
-writer = SummaryWriter()
+from dataset import SimulationDataset
 
 
 def compute_loss(
@@ -84,17 +57,49 @@ def compute_loss(
 
 if __name__ == "__main__":
 
-    best_loss = inf
+    try:
+        os.mkdir(path=MODEL_DIR)
+    except OSError:
+        print("Model directory already exists!")
 
+    # Define dataset
+    training_data = SimulationDataset(base_dir=TRAINING_DATA_DIR)
+    validation_data = SimulationDataset(base_dir=VALIDATION_DATA_DIR)
+
+    training_data_loader = DataLoader(
+        training_data,
+        batch_size=BATCH_SIZE,
+        shuffle=SHUFFLE_DATASET,
+        num_workers=NUM_WORKERS,
+    )
+
+    validation_data_loader = DataLoader(
+        validation_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS
+    )
+
+    # Use GPU if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Create a model and optimization method
+    model = UNet()
+    model = model.to(device)
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     lr_scheduler = ReduceLROnPlateau(optimizer, patience=5, factor=0.5, verbose=True)
 
+    # Save checkpoints for inspection with Tensorboard
+    writer = SummaryWriter()
+
+    best_loss = inf
+
+    # Start training
     for epoch in range(1, N_EPOCHS + 1):
 
         # Monitor training and validation loss
-        train_loss = 0
-        validation_loss = 0
+        train_loss = 0.0
+        validation_loss = 0.0
 
-        print(f"Trainig epoch: {epoch} out of {N_EPOCHS}")
+        print(f"Training epoch: {epoch} out of {N_EPOCHS}")
 
         for idx_batch, batch in tqdm(enumerate(training_data_loader)):
             # Clear the gradient

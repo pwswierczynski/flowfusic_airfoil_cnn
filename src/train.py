@@ -1,7 +1,7 @@
 """ Configuration """
 TRAINING_DATA_DIR = "../data/train"
 VALIDATION_DATA_DIR = "../data/validation"
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.01
@@ -57,6 +57,11 @@ def compute_loss(
 
 if __name__ == "__main__":
 
+    try:
+        os.mkdir(path=MODEL_DIR)
+    except OSError:
+        print("Model directory already exists!")
+
     # Define dataset
     training_data = SimulationDataset(base_dir=TRAINING_DATA_DIR)
     validation_data = SimulationDataset(base_dir=VALIDATION_DATA_DIR)
@@ -91,8 +96,8 @@ if __name__ == "__main__":
     for epoch in range(1, N_EPOCHS + 1):
 
         # Monitor training and validation loss
-        train_loss = 0
-        validation_loss = 0
+        train_loss = 0.0
+        validation_loss = 0.0
 
         print(f"Training epoch: {epoch} out of {N_EPOCHS}")
 

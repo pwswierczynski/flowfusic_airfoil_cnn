@@ -10,7 +10,7 @@ class UNet(nn.Module):
     semantic segmentation.
 
     This implementation is adapted to work as a surrogate model for simulating
-    fluid flow against a cylinder depending on the cylinder's location and diameter.
+    fluid flow against an airfoil depending on the airfoil's shape.
 
     :param n_channels (int): number of channels in the input data.
     :param output_dim (int): dimension of the network's output.

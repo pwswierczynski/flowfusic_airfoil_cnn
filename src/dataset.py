@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, UnidentifiedImageError
 from torch.utils.data import Dataset
 from typing import Dict, List, Tuple
+from tqdm import tqdm
 
 
 class SimulationDataset(Dataset):
@@ -87,6 +88,8 @@ class SimulationDataset(Dataset):
                 pickle.load(simulation_file)
         except EOFError:
             return False
+        except pickle.UnpicklingError:
+            return False
 
         return True
 
@@ -103,10 +106,12 @@ class SimulationDataset(Dataset):
         data_names - list of sample data points
         """
         data_names = []
-        for object in os.listdir(self.base_dir):
+        print("Checking validity of the data...")
+        for object in tqdm(os.listdir(self.base_dir)):
             path_to_object = os.path.join(self.base_dir, object)
             if os.path.isdir(path_to_object) and self._is_valid(path_to_object):
                 data_names.append(object)
+        print("Only correct data samples will be used!")
         return data_names
 
     def _get_geometry_array(self, data_directory: str) -> np.ndarray:

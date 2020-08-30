@@ -3,7 +3,7 @@ import pickle
 
 import numpy as np
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from torch.utils.data import Dataset
 from typing import Dict, List, Tuple
 
@@ -57,6 +57,39 @@ class SimulationDataset(Dataset):
         self.data_names = self._get_data_names()
         self.len_dataset = len(self.data_names)
 
+    def _is_valid(self, path_to_object: str) -> bool:
+        """
+        Function verifying if the simulation files are valid and were saved correctly.
+        This serves as a security layer for the correctness of the dataset class
+        and prevents errors during the training.
+
+        :params:
+        path_to_object: path to the simulation's directory.
+
+        :returns:
+        is_valid: True if the files are in correct format and false otherwise.
+        """
+        # Check if geometry is correctly saved as a PNG file
+        try:
+            # Load geometry
+            path_to_geometry = os.path.join(path_to_object, self.geometry_filename)
+
+            # Preprocessing geometry
+            Image.open(path_to_geometry)
+        except UnidentifiedImageError:
+            return False
+
+        # Check if the simulation results are correctly saved as a valid pickle file
+        try:
+            path_to_simulation = os.path.join(path_to_object, self.simulation_filename)
+
+            with open(path_to_simulation, "rb") as simulation_file:
+                pickle.load(simulation_file)
+        except EOFError:
+            return False
+
+        return True
+
     def _get_data_names(self) -> List[str]:
         """
         Obtains names of data points.
@@ -72,7 +105,7 @@ class SimulationDataset(Dataset):
         data_names = []
         for object in os.listdir(self.base_dir):
             path_to_object = os.path.join(self.base_dir, object)
-            if os.path.isdir(path_to_object):
+            if os.path.isdir(path_to_object) and self._is_valid(path_to_object):
                 data_names.append(object)
         return data_names
 

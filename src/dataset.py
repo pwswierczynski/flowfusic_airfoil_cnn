@@ -102,7 +102,15 @@ class SimulationDataset(Dataset):
         resized_geometry = cropped_geometry.resize(
             geometry_shape, resample=Image.NEAREST
         )
-        geometry_array = np.array(resized_geometry)[..., 0]
+        geometry_array_flat = np.array(resized_geometry)[..., 0]
+
+        # Geometry can be described using binary values only
+        binary_geometry = (geometry_array_flat > 128).astype(np.float32)
+        geometry_array = np.expand_dims(binary_geometry, axis=2)
+
+        # Permute axis so that they are compatible with PyTorch DataLoader.
+        # Required order is Channel x Width x Height
+        geometry_array = np.transpose(geometry_array, (2, 0, 1))
 
         return geometry_array
 
@@ -132,6 +140,10 @@ class SimulationDataset(Dataset):
             pressure_array = np.array(simulation_data["p"]).reshape(*self.np_shape, 1)
 
             flow_array = np.concatenate([velocity_array, pressure_array], axis=2)
+
+        # Permute axis so that they are compatible with PyTorch DataLoader.
+        # Required order is Channel x Width x Height
+        flow_array = np.transpose(flow_array, (2, 0, 1))
 
         return flow_array
 

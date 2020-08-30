@@ -2,7 +2,7 @@
 TRAINING_DATA_DIR = "../data/train"
 VALIDATION_DATA_DIR = "../data/validation"
 BATCH_SIZE = 32
-NUM_WORKERS = 4
+NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.01
 N_EPOCHS = 100
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         train_loss = 0
         validation_loss = 0
 
-        print(f"Trainig epoch: {epoch} out of {N_EPOCHS}")
+        print(f"Training epoch: {epoch} out of {N_EPOCHS}")
 
         for idx_batch, batch in tqdm(enumerate(training_data_loader)):
             # Clear the gradient

@@ -76,8 +76,11 @@ class SimulationDataset(Dataset):
             path_to_geometry = os.path.join(path_to_object, self.geometry_filename)
 
             # Preprocessing geometry
-            Image.open(path_to_geometry)
+            raw_geometry = Image.open(path_to_geometry)
+            cropped_geometry = raw_geometry.crop(self.geometry_bounds)
         except UnidentifiedImageError:
+            return False
+        except OSError:
             return False
 
         # Check if the simulation results are correctly saved as a valid pickle file
@@ -199,7 +202,7 @@ class SimulationDataset(Dataset):
         flow_array = self._get_flow_array(data_directory=data_directory)
 
         # Making sure that velocity and pressure are zero inside the geometry
-        flow_array = geometry_array * flow_array
+        flow_array = (1 - geometry_array) * flow_array
 
         sample = {"geometry": geometry_array, "flow": flow_array}
 

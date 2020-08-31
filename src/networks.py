@@ -41,12 +41,15 @@ class UNet(nn.Module):
         x2 = self.downscaling_1(x1)
         x3 = self.downscaling_2(x2)
         x4 = self.downscaling_3(x3)
-        x = self.downscaling_4(x4)
+        x5 = self.downscaling_4(x4)
 
         # Upscaling part of UNet
-        x = self.upscaling_1(x, x4)
-        x = self.upscaling_2(x, x3)
-        x = self.upscaling_3(x, x2)
-        x = self.upscaling_4(x, x1)
-        output = self.output_conv(x)
+        x6 = self.upscaling_1(x5, x4)
+        x7 = self.upscaling_2(x6, x3)
+        x8 = self.upscaling_3(x7, x2)
+        x9 = self.upscaling_4(x8, x1)
+        x10 = self.output_conv(x9)
+        import pdb; pdb.set_trace()
+        output = x10 * (1 - x)
+
         return output

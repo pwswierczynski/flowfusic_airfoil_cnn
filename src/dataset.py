@@ -177,8 +177,10 @@ class SimulationDataset(Dataset):
             )
 
             # Get only the first two channels containing x- and y- velocity components
-            velocity_array = simulated_velocity[..., :2]
+            # Note that the first channel is mirrored in the pickle file!
+            velocity_array = simulated_velocity[::-1, :, :2]
             pressure_array = np.array(simulation_data["p"]).reshape(*self.np_shape, 1)
+            pressure_array = pressure_array[::-1, ...]
 
             flow_array = np.concatenate([velocity_array, pressure_array], axis=2)
 

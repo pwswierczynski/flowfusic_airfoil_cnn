@@ -49,7 +49,7 @@ class UNet(nn.Module):
         x8 = self.upscaling_3(x7, x2)
         x9 = self.upscaling_4(x8, x1)
         x10 = self.output_conv(x9)
-        import pdb; pdb.set_trace()
+
         output = x10 * (1 - x)
 
         return output

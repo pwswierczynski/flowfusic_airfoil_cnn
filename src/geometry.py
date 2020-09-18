@@ -16,12 +16,13 @@ class AirfoilGeometrySampler:
     L. Xiaoqiang, H. Jun, S. Lei, L. Jing,
     Aerospace Science and Technology, 78 (2018), 241-247.
 
-    :param n_points (int): number of points used in the discretization of the upper and
+    :params:
+    n_points (int): number of points used in the discretization of the upper and
         lower curve of the airfoil. The total discretization of the airfoil uses thus
         2 * n_points - 2 points.
-    :param top_left_corner Tuple[float, float]: coordinates of
+    top_left_corner Tuple[float, float]: coordinates of
         the domain's top left corner
-    :param bottom_right_corner Tuple[float, float]: coordinates of
+    bottom_right_corner Tuple[float, float]: coordinates of
         the domain's bottom right corner
     """
 
@@ -54,7 +55,7 @@ class AirfoilGeometrySampler:
         self.n_points = n_points
         self.discretization_points = np.linspace(0, 1, n_points)
         # MS: added to have more points at leading edge
-        self.discretization_points = self.discretization_points**1.9
+        self.discretization_points = self.discretization_points ** 1.9
 
         self.top_left_corner = top_left_corner
         self.bottom_right_corner = bottom_right_corner
@@ -169,17 +170,21 @@ class AirfoilGeometrySampler:
         return x_camber, upper_curve, lower_curve
 
     def _mesh_geometry(
-        self, x_camber: np.ndarray, upper_curve: np.ndarray, lower_curve: np.ndarray,
+        self,
+        x_camber: np.ndarray,
+        upper_curve: np.ndarray,
+        lower_curve: np.ndarray,
     ) -> Mesh:
         """
         Function computing a triangulation of the airfoil domain.
 
-        :param x_camber: x-coeficients of points used in the discretization.
-        :param upper_curve: y-coefficients of the upper profile of the sampled airfoil.
+        :params:
+        x_camber: x-coeficients of points used in the discretization.
+        upper_curve: y-coefficients of the upper profile of the sampled airfoil.
             The discretization is evaluated at x_camber points.
-        :param lower_curve: y-coefficients of the lower profile of the sampled airfoil.
+        lower_curve: y-coefficients of the lower profile of the sampled airfoil.
             The discretization is evaluated at x_camber points.
-        :return:
+        :returns:
         mash: airfoil's triangulation computed using GMSH package.
         """
 
@@ -214,23 +219,19 @@ class AirfoilGeometrySampler:
         ]
         mesh.addEntities(domain_outer_boundary)
 
-        outer_curve = Entity.CurveLoop(domain_outer_boundary, mesh=mesh)
-
         # Add airfoil points
         airfoil_points = []
 
-        i=0
         for x, y in zip(x_camber, upper_curve):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
             mesh.addEntity(point)
 
-
         for x, y in zip(x_camber[::-1][1:-1], lower_curve[::-1][1:-1]):
             point = Entity.Point([x, y, 0])
             airfoil_points.append(point)
             mesh.addEntity(point)
-  
+
         # Discretize the airfoil profile
         intervals = []
         for i in range(len(airfoil_points) - 1):
@@ -246,34 +247,24 @@ class AirfoilGeometrySampler:
         intervals.append(interval)
 
         mesh.addEntities(intervals)
-        airfoil_profile = Entity.CurveLoop(intervals, mesh=mesh)
 
-        # Define interior of the domain
-        surface = Entity.PlaneSurface([airfoil_profile, outer_curve], mesh=mesh)
+        field_boundary_layer = Field.BoundaryLayer(mesh=mesh)
 
-        
-        fbl = Field.BoundaryLayer(mesh=mesh)
+        # Setting boundary layer parameters
+        field_boundary_layer.EdgesList = intervals
+        field_boundary_layer.AnisoMax = 1.0
+        field_boundary_layer.hfar = 0.2
+        field_boundary_layer.hwall_n = 0.001
+        field_boundary_layer.thickness = 0.05
+        field_boundary_layer.ratio = 1.1
+        field_boundary_layer.Quads = 1
+        field_boundary_layer.IntersectMetrics = 0
+        mesh.BoundaryLayerField = field_boundary_layer
 
-        fbl.EdgesList = intervals;
-        fbl.AnisoMax = 1.0;
-        fbl.hfar = 0.2;
-        fbl.hwall_n = 0.001;
-        fbl.thickness = 0.05;
-        fbl.ratio = 1.1;
-        fbl.Quads = 1;
-        fbl.IntersectMetrics = 0;
-        mesh.BoundaryLayerField=fbl
-        
-        
         # set max element size
         mesh.Options.Mesh.CharacteristicLengthMax = 0.3
 
-        # Adding Coherence option
-        #mesh.Coherence = True
-
         return mesh
-
-        
 
     def create_airfoil_geometry(
         self, dir_to_save: str, filename: str = "geometry"
@@ -282,8 +273,9 @@ class AirfoilGeometrySampler:
         End-to-end function sampling an airfoil's profile, triangulating it,
         and saving the geometry in .geo and .stl formats.
 
-        :param dir_to_save: directory, in which the geometry will be stored.
-        :param filename: name of the geometry files. The default value is "geometry".
+        :params:
+        dir_to_save: directory, in which the geometry will be stored.
+        filename: name of the geometry files. The default value is "geometry".
             The function saves <filename>.geo and <filename>.stl files.
         """
 
@@ -304,19 +296,14 @@ class AirfoilGeometrySampler:
         path_to_save_msh = os.path.join(dir_to_save, f"{filename}.msh")
 
         mesh.writeGeo(path_to_save_geo)
-        geo = open(path_to_save_geo,'a')
-        geo.write("Physical Volume(\"internal\") = {1};\n")
+        geo = open(path_to_save_geo, "a")
+        geo.write('Physical Volume("internal") = {1};\n')
         geo.write("Extrude {0, 0, 0.1} {\n Surface{1};\n Layers{1};\n Recombine;\n}\n")
-        geo.write("Physical Surface(\"inlet\") = {1};\n")
-        #geo.write("Physical Surface(\"inlet2\") = {7};\n")
-        #geo.write("Physical Surface(\"inlet3\") = {zV[3]};\n")
-        #geo.write("Physical Surface(\"inlet4\") = {zV[4]};\n")
-        #geo.write("Physical Surface(\"inlet5\") = {zV[5]};\n")
+        geo.write('Physical Surface("inlet") = {1};\n')
 
         geo.write("Coherence\n")
         geo.close()
 
-        
         subprocess.run(
             [
                 "gmsh",
@@ -346,7 +333,6 @@ class AirfoilGeometrySampler:
             ]
         )
 
-
     @staticmethod
     def plot_airfoil(
         x_camber, upper_curve, lower_curve, filename: Optional[str] = None
@@ -354,12 +340,13 @@ class AirfoilGeometrySampler:
         """
         Function visualizing the provided airfoil's profile.
 
-        :param x_camber: x-coeficients of points used in the discretization.
-        :param upper_curve: y-coefficients of the upper profile of the sampled airfoil.
+        :params:
+        x_camber: x-coeficients of points used in the discretization.
+        upper_curve: y-coefficients of the upper profile of the sampled airfoil.
             The discretization is evaluated at x_camber points.
-        :param lower_curve: y-coefficients of the lower profile of the sampled airfoil.
+        lower_curve: y-coefficients of the lower profile of the sampled airfoil.
             The discretization is evaluated at x_camber points.
-        :param filename: name of the image file, in which the visualization should
+        filename: name of the image file, in which the visualization should
             be saved. If None value is provided, then no image is saved.
             This parameter is optional and by default equal to None.
         """

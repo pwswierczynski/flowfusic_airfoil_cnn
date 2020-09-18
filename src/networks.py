@@ -12,8 +12,9 @@ class UNet(nn.Module):
     This implementation is adapted to work as a surrogate model for simulating
     fluid flow against an airfoil depending on the airfoil's shape.
 
-    :param n_channels (int): number of channels in the input data.
-    :param output_dim (int): dimension of the network's output.
+    :params:
+    n_channels (int): number of channels in the input data.
+    output_dim (int): dimension of the network's output.
     """
 
     def __init__(self, n_channels: int = 1, output_dim: int = 3):

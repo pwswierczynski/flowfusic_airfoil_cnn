@@ -74,21 +74,22 @@ class AirfoilGeometrySampler:
         Computes approximation of the airfoil's geometry based on the given parameters
         describing its shape.
 
-        :param c1: coefficient of camber-line-abscissa parameter equation.
+        :params:
+        c1: coefficient of camber-line-abscissa parameter equation.
             Takes values in the range (0.01, 0.96).
-        :param c2: coefficient of camber-line-abscissa parameter equation.
+        c2: coefficient of camber-line-abscissa parameter equation.
             Takes values in the range (0.02, 0.97).
-        :param c3: coefficient of camber-line-abscissa parameter equation.
+        c3: coefficient of camber-line-abscissa parameter equation.
             Takes values in the range (-0.074, 0.247).
-        :param c4: coefficient of camber-line-abscissa parameter equation.
+        c4: coefficient of camber-line-abscissa parameter equation.
             Takes values in the range (-0.102, 0.206).
-        :param X_T: chordwise location of maximum thickness.
+        X_T: chordwise location of maximum thickness.
             Takes values in the range (-0.2002, 0.4813).
-        :param T: x-coordinate of the point of maximum thickness.
+        T: x-coordinate of the point of maximum thickness.
             Takes values in the range (0.0246, 0.3227).
-        :param rho_bar: relative quantity of the leading edge radius.
+        rho_bar: relative quantity of the leading edge radius.
             Takes values in the range (0.175, 1.4944).
-        :param beta_bar: relative quantity of the trailing edge boat-tail angle.
+        beta_bar: relative quantity of the trailing edge boat-tail angle.
             Takes values in the range (0.1452, 4.8724).
         :return:
         """
@@ -113,7 +114,7 @@ class AirfoilGeometrySampler:
         )
 
         # Assemble linear system to solve for thickness parameters
-        A = np.array(
+        system_matrix = np.array(
             [
                 [np.sqrt(X_T), X_T, X_T ** 2, X_T ** 3, X_T ** 4],
                 [0.5 / np.sqrt(X_T), 1, 2 * X_T, 3 * X_T ** 2, 4 * X_T ** 3],
@@ -122,9 +123,9 @@ class AirfoilGeometrySampler:
                 [1, 1, 1, 1, 1],
             ]
         )
-        R = np.array([T, 0, -np.tan(beta / 2), np.sqrt(2 * rho), 0])
+        right_hand_side = np.array([T, 0, -np.tan(beta / 2), np.sqrt(2 * rho), 0])
 
-        t = np.linalg.solve(A, R)
+        t = np.linalg.solve(system_matrix, right_hand_side)
 
         thickness = (
             t[0] * np.sqrt(x_camber)
@@ -142,7 +143,7 @@ class AirfoilGeometrySampler:
     def sample_airfoil_geometry(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         This function samples eight parameters describing the airfoil's geometry,
-        and compoutes the discretizations of the airfoil's profile.
+        and computes the discretizations of the airfoil's profile.
 
         :return:
         x_camber: x-coeficients of points used in the discretization.

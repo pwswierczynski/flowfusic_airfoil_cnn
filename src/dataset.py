@@ -77,7 +77,7 @@ class SimulationDataset(Dataset):
 
             # Preprocessing geometry
             raw_geometry = Image.open(path_to_geometry)
-            cropped_geometry = raw_geometry.crop(self.geometry_bounds)
+            _ = raw_geometry.crop(self.geometry_bounds)
         except UnidentifiedImageError:
             return False
         except OSError:
@@ -108,12 +108,13 @@ class SimulationDataset(Dataset):
         :returns
         data_names - list of sample data points
         """
-        data_names = []
+        data_names: list = []
         print("Checking validity of the data...")
-        for object in tqdm(os.listdir(self.base_dir)):
-            path_to_object = os.path.join(self.base_dir, object)
+        for file in tqdm(os.listdir(self.base_dir)):
+            path_to_object = os.path.join(self.base_dir, file)
             if os.path.isdir(path_to_object) and self._is_valid(path_to_object):
-                data_names.append(object)
+                data_names.append(file)
+
         print("Only correct data samples will be used!")
         return data_names
 

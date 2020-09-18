@@ -9,8 +9,9 @@ class ConvolutionalBlock(nn.Module):
     It consists of two repeated parts, each containing a convolutional part,
     batch normalization layer, and a ReLU nonlinearity.
 
-    :param in_channels (int): number of channels in the data
-    :param out_channels (int): number of channels in the output
+    :params:
+    in_channels (int): number of channels in the data
+    out_channels (int): number of channels in the output
     """
 
     def __init__(self, in_channels: int = 1, out_channels: int = 3) -> None:
@@ -36,8 +37,9 @@ class Downscaling(nn.Module):
     This block applies max-pooling operation and the convolutional block
     to the provided data.
 
-    :param in_channels (int): number of channels in the input data
-    :param out_channels (int): number of channels in the output
+    :params:
+    in_channels (int): number of channels in the input data
+    out_channels (int): number of channels in the output
     """
 
     def __init__(self, in_channels: int, out_channels: int) -> None:
@@ -59,8 +61,9 @@ class Upscaling(nn.Module):
     convolutions to the first of the input layers, concatenating with the second layer,
     and applying another convolutional block to the output.
 
-    :param in_channels (int): number of channels in the input data
-    :param out_channels (int): number of channels in the output
+    :params:
+    in_channels (int): number of channels in the input data
+    out_channels (int): number of channels in the output
     """
 
     def __init__(self, in_channels, out_channels):
@@ -76,7 +79,6 @@ class Upscaling(nn.Module):
 
     def forward(self, first_layer, second_layer):
 
-        # current_output = self.trans_conv(first_layer)
         current_output = self.upsampling(first_layer)
 
         diff_y = second_layer.size()[2] - current_output.size()[2]

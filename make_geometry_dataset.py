@@ -52,12 +52,13 @@ def create_airfoil_profiles(directory: str, n_samples: int, n_points: int) -> No
     """
     Creates a set of airfoil profiles in .geo and .stl formats in the given directory.
 
-	:param directory (str): Path to the directory, in which the profiles should be saved.
-	:param n_samples (int): Number of samples in the dataset.
-    :param n_points (int): Number of points used in the discretization of the upper and
+    :params
+    directory (str): Path to the directory, in which the profiles should be saved.
+    n_samples (int): Number of samples in the dataset.
+    n_points (int): Number of points used in the discretization of the upper and
         lower curve of the airfoil. The total discretization of the airfoil uses thus
         2 * n_points - 2 points.
-	"""
+    """
 
     airfoil_sampler = AirfoilGeometrySampler(n_points=n_points)
     for i in tqdm(range(n_samples)):

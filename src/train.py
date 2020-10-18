@@ -57,10 +57,7 @@ def compute_loss(
 
 if __name__ == "__main__":
 
-    try:
-        os.mkdir(path=MODEL_DIR)
-    except OSError:
-        print("Model directory already exists!")
+    os.makedirs(MODEL_DIR, exist_ok=True)
 
     # Define dataset
     training_data = SimulationDataset(base_dir=TRAINING_DATA_DIR)

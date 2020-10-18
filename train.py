@@ -1,12 +1,12 @@
 """ Configuration """
-TRAINING_DATA_DIR = "../data/train"
-VALIDATION_DATA_DIR = "../data/validation"
+TRAINING_DATA_DIR = "data/train"
+VALIDATION_DATA_DIR = "data/validation"
 BATCH_SIZE = 16
 NUM_WORKERS = 2
 SHUFFLE_DATASET = True
 LEARNING_RATE = 0.01
 N_EPOCHS = 100
-MODEL_DIR = "../models"
+MODEL_DIR = "models"
 
 import os
 import torch

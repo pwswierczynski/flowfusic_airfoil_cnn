@@ -18,8 +18,8 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from typing import Dict
 
-from networks import UNet
-from dataset import SimulationDataset
+from src.networks import UNet
+from src.dataset import SimulationDataset
 
 
 def compute_loss(

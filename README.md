@@ -1,6 +1,6 @@
 # A case for machine learning in CFD
 
-This repository contains the code used in the article [**A case for machine learning in CFD**](https://medium.com/@mskarysz_35929/a-case-for-machine-learning-in-cfd-3aca27aaca76) published on Medium.
+This repository contains the code used in the article [**A case for machine learning in CFD**](https://medium.com/@mskarysz_35929/a-case-for-machine-learning-in-cfd-3aca27aaca76) published by [**FlowFusic**](https://www.flowfusic.com/).
 
 ![](https://github.com/pwswierczynski/flowfusic_cylinder_flow/blob/master/static/flowfusic_logo.png)
 
